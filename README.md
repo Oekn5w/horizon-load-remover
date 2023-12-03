@@ -20,7 +20,7 @@ Demo of the load remover in action on all removable loads:
 ## Setup
 Advanced Scene Switcher 1.24 and later contains an `else` branch in the macros, which is used here. If that is not available, another macro with the negated condition has to be added (doubling the performance impact) to resume the timer.
 
-The setup is described for a 1080p source. Scaled sources are possible when they are fed through an extra Scene or Group; the video )
+The setup is described for a 1080p source. Scaled sources are possible when they are fed through an extra Scene or Group; the video above is using the PC version of HZD on 1440p scaled to the canvas in a group
 
 * Set the advanced Scene Switcher interval to the lowest possible (50ms)
 * Add a new macro
@@ -31,6 +31,7 @@ The setup is described for a 1080p source. Scaled sources are possible when they
   * Check the `Use alpha channel as mask` checkbox
   * Pattern matching method `Squared difference`
   * Check area (X, Y, W, H): `99,976,115,25`
+  * Check `Reduce matching latency`
 * Action branch 1:
   * Type: Run
   * Entry: `"<path-to-python-exe>" "<path-to-scripts>\serverCmdStandalone.py" pause`
@@ -38,7 +39,7 @@ The setup is described for a 1080p source. Scaled sources are possible when they
   * Type: Run
   * Entry: `"<path-to-python-exe>" "<path-to-scripts>\serverCmdStandalone.py" unpause`
 
-The final macro can be seen here:
+The final macro can be seen here (apart from the reduced matching latency):
 ![macro setup](./resources/adv-setup.png)
 
 The LiveSplit Server component has to be started __manually__ at every LiveSplit launch. (At least for now, maybe another DLL with autolaunch will be provided in the future)
@@ -58,8 +59,8 @@ To create one for your workflow follow these instructions (and create a pullrequ
 * LS-Server:
   * Make it a websocket server so that the websocket actions from the Scene Switcher can be used
   * Visual indication in the layout similar to the global hotkey indication of
-    1) whether the server is running
-    2) whether the expected number of clients are connected
+    1. whether the server is running
+    2. whether the expected number of clients are connected
 * Python script for OBS directly which keeps the socket connection open and works with OBS internal hotkeys for the Scene Switcher
 
 ## License
