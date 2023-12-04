@@ -6,7 +6,7 @@ port = 16834
 errored = False
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.settimeout(10)
+s.settimeout(0.03)
 s.connect((server, port))
 if len(sys.argv) >= 2:
     if sys.argv[1] == "pause":
