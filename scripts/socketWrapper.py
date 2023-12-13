@@ -6,11 +6,12 @@ socket_port = 16834
 
 socket_obj : socket.socket = None
 
-LOOP_INTERVAL = 5000
+LOOP_INTERVAL = 3000
 
-KEY_ACTIVE= "is_active"
-KEY_MODE_TARGET= "mode_Target"
-KEY_MODE_SENT= "mode_Sent"
+KEY_ACTIVE = "is_active"
+KEY_RETRY = "retry"
+KEY_MODE_TARGET = "mode_Target"
+KEY_MODE_SENT = "mode_Sent"
 
 MODE_UNDEFINED = -1
 MODE_STOPPED = 0
@@ -21,6 +22,7 @@ LOG_ACTIVE = True
 
 state={
   KEY_ACTIVE: True,
+  KEY_RETRY: True,
   KEY_MODE_TARGET: MODE_UNDEFINED,
   KEY_MODE_SENT: MODE_UNDEFINED,
 }
@@ -33,22 +35,9 @@ SET_HOTKEY_ID_UNPAUSE = ["hk_lss_unpause", "LiveSplit Server unpause GT"]
 def script_description():
   return """Python socket wrapper for controlling LiveSplit via the Advanced Scene Switcher"""
 
-# Called to display the properties GUI
-def script_properties():
-  props = obs.obs_properties_create()
-  # obs.obs_properties_add_text(props, "socket_host", "LiveSplit Server Host", obs.OBS_TEXT_DEFAULT)
-  # obs.obs_properties_add_text(props, "socket_port", "LiveSplit Server Port", obs.OBS_TEXT_DEFAULT)
-  return props
-
 def lss_log(entry : str):
   if LOG_ACTIVE:
     obs.blog(obs.LOG_INFO, LOG_PREFIX + str(entry))
-
-# Called to set default values of data settings
-def script_defaults(settings):
-  # obs.obs_data_set_default_string(settings, "socket_host", "127.0.0.1")
-  # obs.obs_data_set_default_string(settings, "socket_port", "16834")
-  pass
 
 def on_hotkey_pause(pressed):
   if not pressed:
@@ -103,6 +92,8 @@ def check_loop():
         socket_obj.close()
         socket_obj = None
     if socket_obj is None:
+      if not state[KEY_RETRY]:
+        return
       # try to connect
       try:
         lss_log("Trying to connect to socket")
@@ -110,13 +101,16 @@ def check_loop():
         socket_obj.settimeout(0.01)
         socket_obj.connect((socket_host, socket_port))
         lss_log("Socket connected")
-      except:
+      except TimeoutError:
+        socket_obj = None
+      except Exception as e:
+        lss_log("Connection failed: " + str(e))
+        state[KEY_RETRY] = False
         socket_obj = None
   else:
     if socket_obj is not None:
       socket_obj.close()
       socket_obj = None
-
   
 # Called at script load
 def script_load(settings):
@@ -146,8 +140,41 @@ def script_unload():
 
 # Called before data settings are saved
 def script_save(settings):
-  pass
+  global hotkey_id_pause, hotkey_id_unpause
+  hotkey_save_array = obs.obs_hotkey_save(hotkey_id_pause)
+  obs.obs_data_set_array(settings, SET_HOTKEY_ID_PAUSE[0], hotkey_save_array)
+  obs.obs_data_array_release(hotkey_save_array)
+  hotkey_save_array = obs.obs_hotkey_save(hotkey_id_unpause)
+  obs.obs_data_set_array(settings, SET_HOTKEY_ID_UNPAUSE[0], hotkey_save_array)
+  obs.obs_data_array_release(hotkey_save_array)
+
+# Called to display the properties GUI
+def script_properties():
+  props = obs.obs_properties_create()
+  obs.obs_properties_add_text(props, "socket_host", "LiveSplit Server Host", obs.OBS_TEXT_DEFAULT)
+  obs.obs_properties_add_int(props, "socket_port", "LiveSplit Server Port", 500, 65535, 1)
+  obs.obs_properties_add_bool(props, "active", "Enable LiveSplit Server Wrapper")
+  return props
+
+# Called to set default values of data settings
+def script_defaults(settings):
+  obs.obs_data_set_default_string(settings, "socket_host", "127.0.0.1")
+  obs.obs_data_set_default_int(settings, "socket_port", 16834)
+  obs.obs_data_set_default_bool(settings, "active", True)
 
 # Called after change of settings including once after script load
 def script_update(settings):
-  pass
+  global state, socket_host, socket_port, socket_obj
+  if socket_obj is not None:
+    socket_obj.close()
+    socket_obj = None
+  socket_host = obs.obs_data_get_string(settings, "socket_host")
+  socket_port = obs.obs_data_get_int(settings, "socket_port")
+  state[KEY_ACTIVE] = obs.obs_data_get_bool(settings, "active")
+  state[KEY_RETRY] = True
+  state[KEY_MODE_SENT] = MODE_UNDEFINED
+  if state[KEY_ACTIVE]:
+    logState = "activated"
+  else:
+    logState = "deactivated"
+  lss_log("Settings updated, Wrapper " + logState)
