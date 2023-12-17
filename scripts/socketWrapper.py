@@ -88,8 +88,9 @@ def check_loop():
       # check if still connected, kind of https://stackoverflow.com/a/62277798
       try:
         socket_obj.sendall(b"\r\n")
-      except ConnectionAbortedError:
-        socket_obj.close()
+      except:
+        if socket_obj is not None:
+          socket_obj.close()
         socket_obj = None
     if socket_obj is None:
       if not state[KEY_RETRY]:
@@ -98,7 +99,7 @@ def check_loop():
       try:
         lss_log("Trying to connect to socket")
         socket_obj = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        socket_obj.settimeout(0.01)
+        socket_obj.settimeout(0.1)
         socket_obj.connect((socket_host, socket_port))
         lss_log("Socket connected")
       except TimeoutError:
