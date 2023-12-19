@@ -19,12 +19,14 @@ The following table shows the available comparison images and their area setting
 
 ## Prerequistites
 * OBS
-* [Advanced Scene Switcher Plugin](https://github.com/WarmUpTill/SceneSwitcher/) (ideally 1.24 or later)
+* [Advanced Scene Switcher Plugin](https://github.com/WarmUpTill/SceneSwitcher/) (ideally 1.24.2 or later)
 * LiveSplit layout with the [LiveSplit Server](https://github.com/LiveSplit/LiveSplit.Server#install) component
 * [Python 3.11](https://www.python.org/downloads/windows/) has to be installed (For OBS 29 Python 3.12 does not work), on a path that does not contain spaces.
 
 ## Setup
 Advanced Scene Switcher 1.24 and later contains an `else` branch in the macros, which is used here. If that is not available, another macro with the negated condition has to be added (doubling the performance impact) to resume the timer.
+
+Furthermore, significant performance improvements have been implemented in 1.24.2 for the video condition.
 
 The setup is described for a 1080p source. Scaled sources are possible when they are fed through an extra Scene or Group.
 
@@ -48,7 +50,7 @@ You don't need to assign any hotkeys, but you could do so temporarily to check i
 ### Advanced Scene Switcher
 
 #### General
-* Set the advanced Scene Switcher interval to the lowest possible (50ms)
+* Set the advanced Scene Switcher interval to the lowest possible (50ms, 10ms since SceneSwitcher 1.24.2)
 
 The LiveSplit Server component has to be started __manually__ at every LiveSplit launch. (At least for now, maybe another DLL with auto-launch will be provided in the future)
 
