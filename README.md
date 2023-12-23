@@ -26,6 +26,8 @@ The following table shows the available comparison images and their area setting
 ## Setup
 Advanced Scene Switcher 1.24 and later contains an `else` branch in the macros, which is used here. If that is not available, another macro with the negated condition has to be added (doubling the performance impact) to resume the timer.
 
+For the LiveSplit Server component a modified version is also available under [https://github.com/Oekn5w/LiveSplit.Server/releases](https://github.com/Oekn5w/LiveSplit.Server/releases). This version implements a feature to Auto-Start the server and also provides the option to show a small line in the LiveSplit layout to quickly check the status of Server while running. In the OBS layout, the indicator can easily be cropped if you do not want to have it in the recording.
+
 Furthermore, significant performance improvements have been implemented in 1.24.2 for the video condition.
 
 The setup is described for a 1080p source. Scaled sources are possible when they are fed through an extra Scene or Group.
