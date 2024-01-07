@@ -93,7 +93,7 @@ Each text language, resolution and aspect ratio need its own comparison image.
 
 To create one for your workflow follow these instructions (and create a Pull Request here if you want):
 
-* Capture a lossless (png) screenshot of the default (FT, RFS) loading screen from your source in the resolution you want to apply the load remover later
+* Capture a lossless (png) screenshot of the default (fast travel or restart from save) loading screen from your source in the resolution you want to apply the load remover later
 * Crop the `Loading` section from the screenshot (without the trailing dots), this crop will also give the area --- Default Paint is surprisingly good for that as it will show the pixel-perfect cropping area that needs to be entered in the Scene Switcher setup
 * Open the crop in GIMP (or something else) and use the wand tool to select the surrounding and the inside of `O` s and make these fully transparent
 * Save the image as PNG with alpha layer
