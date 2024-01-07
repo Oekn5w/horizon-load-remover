@@ -1,17 +1,21 @@
 import obspython as obs
 import socket
+import time
+import datetime
 
 socket_host = "127.0.0.1"
 socket_port = 16834
 
 socket_obj : socket.socket = None
 
-LOOP_INTERVAL = 3000
+LOOP_INTERVAL = 1000 # in ms for OBS function
+CHK_INTERVAL = 20.0 # in s for time.time() comparison
 
 KEY_ACTIVE = "is_active"
 KEY_RETRY = "retry"
 KEY_MODE_TARGET = "mode_Target"
 KEY_MODE_SENT = "mode_Sent"
+KEY_TIME_CHK = "time_check"
 
 MODE_UNDEFINED = -1
 MODE_STOPPED = 0
@@ -25,12 +29,13 @@ state={
   KEY_RETRY: True,
   KEY_MODE_TARGET: MODE_UNDEFINED,
   KEY_MODE_SENT: MODE_UNDEFINED,
+  KEY_TIME_CHK: 0.0,
 }
 
 hotkey_id_pause = obs.OBS_INVALID_HOTKEY_ID
-SET_HOTKEY_ID_PAUSE = ["hk_lss_pause", "LiveSplit Server pause GT"]
+SET_HOTKEY_ID_PAUSE = ["py_hk_lss_pause", "PY: LiveSplit Server pause GT"]
 hotkey_id_unpause = obs.OBS_INVALID_HOTKEY_ID
-SET_HOTKEY_ID_UNPAUSE = ["hk_lss_unpause", "LiveSplit Server unpause GT"]
+SET_HOTKEY_ID_UNPAUSE = ["py_hk_lss_unpause", "PY: LiveSplit Server unpause GT"]
 
 def script_description():
   return """Python socket wrapper for controlling LiveSplit via the Advanced Scene Switcher"""
@@ -73,6 +78,7 @@ def run_action():
         socket_obj = None
       return
     state[KEY_MODE_SENT] = state[KEY_MODE_TARGET]
+    state[KEY_TIME_CHK] = time.time() + CHK_INTERVAL
 
 # Called every frame
 def script_tick(seconds):
@@ -84,7 +90,7 @@ def script_tick(seconds):
 def check_loop():
   global state, socket_obj, socket_host, socket_port
   if state[KEY_ACTIVE]:
-    if socket_obj is not None:
+    if socket_obj is not None and state[KEY_TIME_CHK] > 0.0 and time.time() > state[KEY_TIME_CHK]:
       # check if still connected, kind of https://stackoverflow.com/a/62277798
       try:
         socket_obj.sendall(b"\r\n")
@@ -92,16 +98,20 @@ def check_loop():
         if socket_obj is not None:
           socket_obj.close()
         socket_obj = None
+        state[KEY_TIME_CHK] = 0.0
+        return
+      while time.time() > state[KEY_TIME_CHK]:
+        state[KEY_TIME_CHK] = state[KEY_TIME_CHK] + CHK_INTERVAL
     if socket_obj is None:
       if not state[KEY_RETRY]:
         return
       # try to connect
       try:
-        lss_log("Trying to connect to socket")
         socket_obj = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         socket_obj.settimeout(0.1)
         socket_obj.connect((socket_host, socket_port))
         lss_log("Socket connected")
+        state[KEY_TIME_CHK] = time.time() + CHK_INTERVAL
       except TimeoutError:
         socket_obj = None
       except Exception as e:
@@ -112,6 +122,7 @@ def check_loop():
     if socket_obj is not None:
       socket_obj.close()
       socket_obj = None
+      state[KEY_TIME_CHK] = 0.0
   
 # Called at script load
 def script_load(settings):
@@ -131,6 +142,7 @@ def script_load(settings):
 
   obs.timer_add(check_loop, LOOP_INTERVAL)
   lss_log("Script initialized")
+  lss_log("Trying to connect to socket")
 
 # Called at script unload
 def script_unload():
@@ -174,6 +186,7 @@ def script_update(settings):
   state[KEY_ACTIVE] = obs.obs_data_get_bool(settings, "active")
   state[KEY_RETRY] = True
   state[KEY_MODE_SENT] = MODE_UNDEFINED
+  state[KEY_TIME_CHK] = 0.0
   if state[KEY_ACTIVE]:
     logState = "activated"
   else:
