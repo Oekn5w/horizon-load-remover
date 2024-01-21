@@ -21,7 +21,7 @@ MODE_UNDEFINED = -1
 MODE_STOPPED = 0
 MODE_RUNNING = 1
 
-LOG_PREFIX = "[LSS Wrapper] "
+LOG_PREFIX = "[LSS Wrapper PY] "
 LOG_ACTIVE = True
 
 state={
@@ -178,6 +178,7 @@ def script_defaults(settings):
 # Called after change of settings including once after script load
 def script_update(settings):
   global state, socket_host, socket_port, socket_obj
+  # Every change of the settings requires recreating the socket
   if socket_obj is not None:
     socket_obj.close()
     socket_obj = None
