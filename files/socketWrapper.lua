@@ -6,8 +6,12 @@ socket_port = 16834
 
 socket_obj = nil
 
-LOOP_INTERVAL = 1000 -- in ms for OBS function
-CHK_INTERVAL = 20.0 -- in s for os.clock() comparison
+LOOP_INTERVAL = 250 -- in ms for OBS function
+
+-- in s for os.clock() comparison
+INTERVAL_CHK = 20.0 -- check if still connected
+INTERVAL_TO = 0.5 -- check if timed out
+INTERVAL_RETRY = 2.0 -- retry connection
 
 MODE_UNDEFINED = -1
 MODE_STOPPED = 0
@@ -17,6 +21,11 @@ LOG_PREFIX = "[LSS Wrapper Lua] "
 LOG_ACTIVE = true
 
 state_active = true
+state_internal = 0
+-- 0: off
+-- 1: connecting
+-- 2: connected
+
 state_retry = true
 state_lock_connecting = false
 state_mode_target = MODE_UNDEFINED
@@ -62,7 +71,7 @@ function run_action()
   if not (state_mode_target == MODE_RUNNING or state_mode_target == MODE_STOPPED) then
     return
   end
-  if state_active and socket_obj ~= nil and (not state_lock_connecting) then
+  if (state_internal == 2) then
     local payload
     if state_mode_target == MODE_STOPPED then
       payload = "pausegametime\r\n"
@@ -77,10 +86,12 @@ function run_action()
         socket_obj:close()
         socket_obj = nil
       end
+      state_time_chk = os.clock() + INTERVAL_RETRY
+      state_internal = 0
       return
     end
     state_mode_sent = state_mode_target
-    state_time_chk = os.clock() + CHK_INTERVAL
+    state_time_chk = os.clock() + INTERVAL_CHK
   end
 end
 
@@ -93,49 +104,54 @@ end
 
 -- Called every LOOP_INTERVAL (ms)
 function check_loop()
-  if state_active then
-    if socket_obj ~= nil and (not state_lock_connecting) and state_time_chk > 0.0 and os.clock() > state_time_chk then
-      socket_obj:send("\r\n")
-      local len, err, num = socket_obj:send("\r\n")
-      if num ~= nil then
-        -- failure during sending
-        if socket_obj ~= nil then
-          socket_obj:close()
-          socket_obj = nil
-        end
-        state_time_chk = 0.0
+  if state_time_chk == 0 or (state_time_chk > 0.0 and os.clock() < state_time_chk) then
         return
       end
-      while os.clock() > state_time_chk do
-        state_time_chk = state_time_chk + CHK_INTERVAL
-      end
-    end
-    if socket_obj == nil then
-      if not state_retry then
-        return
-      end
-      -- try to connect
-      state_lock_connecting = true
+  if state_internal == 0 then
+    if state_active then
+      lss_log("Trying to connect to socket")
       socket_obj = socket.create("inet", "stream", "tcp")
+      socket_obj:set_blocking(false)
       local status, err = pcall(socket_obj:connect(socket_host, socket_port))
-      if not status and err ~= "attempt to call a boolean value" then
-        -- timed out (2 seconds)
+      state_time_chk = os.clock() + INTERVAL_TO
+      state_internal = 1
+    else
+      state_time_chk = os.clock() + INTERVAL_RETRY
+    end
+  elseif state_internal == 1 then
+    local status, service, num = socket_obj:is_connected()
+    if status then
+      -- no timeout
+      socket_obj:set_blocking(true)
+      state_time_chk = os.clock() + INTERVAL_CHK
+      state_internal = 2
+      lss_log("Connected")
+    else
+      -- timed out
+      if socket_obj ~= nil then
         socket_obj:close()
         socket_obj = nil
-        lss_log(err)
-        -- skip the Python's non-timeout connection errors for now
-        -- unable to check for that; state_retry is thus unused
-        return
       end
-      state_lock_connecting = false
-      lss_log("Socket connected")
-      state_time_chk = os.clock() + CHK_INTERVAL
-  end
-  else
-    if socket_obj ~= nil and (not state_lock_connecting) then
+      state_time_chk = os.clock() + INTERVAL_RETRY
+      state_internal = 0
+      lss_log("Timed out")
+    end
+  elseif state_internal == 2 then
+    lss_log("Checking connection")
+    while os.clock() > state_time_chk do
+      state_time_chk = state_time_chk + INTERVAL_CHK
+    end
+    socket_obj:send("\r\n")
+    local len, err, num = socket_obj:send("\r\n")
+    if (num ~= nil) or (not state_active) then
+      -- failure during sending or requested to close the connection
+      if socket_obj ~= nil then
       socket_obj:close()
       socket_obj = nil
-      state_time_chk = 0.0
+      end
+      state_time_chk = os.clock() + INTERVAL_RETRY
+      state_internal = 0
+      return
     end
   end
 end
@@ -157,8 +173,8 @@ function script_load(settings)
   if socket_obj ~= nil then
     socket_obj:close()
     socket_obj = nil
-    state_time_chk = 0.0
   end
+  state_time_chk = os.clock() + 0.5
 
   obs.timer_add(check_loop, LOOP_INTERVAL)
   lss_log("Script initialized")
@@ -209,12 +225,13 @@ function script_update(settings)
     socket_obj:close()
     socket_obj = nil
   end
+  state_internal = 0
   socket_host = obs.obs_data_get_string(settings, "socket_host")
   socket_port = obs.obs_data_get_int(settings, "socket_port")
   state_active = obs.obs_data_get_bool(settings, "active")
   state_retry = true
   state_mode_sent = MODE_UNDEFINED
-  state_time_chk = 0.0
+  state_time_chk = os.clock() + 0.5
   if state_active then
     logState = "activated"
   else
