@@ -27,7 +27,7 @@ state_internal = 0
 -- 2: connected
 
 state_retry = true
-state_lock_connecting = false
+state_loop_locked = false
 state_mode_target = MODE_UNDEFINED
 state_mode_sent = MODE_UNDEFINED
 state_time_chk = 0.0
@@ -104,22 +104,35 @@ end
 
 -- Called every LOOP_INTERVAL (ms)
 function check_loop()
-  if state_time_chk == 0 or (state_time_chk > 0.0 and os.clock() < state_time_chk) then
-        return
-      end
+  if state_loop_locked or state_time_chk == 0 or (state_time_chk > 0.0 and os.clock() < state_time_chk) then
+    return
+  end
+  state_loop_locked = true
   if state_internal == 0 then
     if state_active then
       lss_log("Trying to connect to socket")
       socket_obj = socket.create("inet", "stream", "tcp")
       socket_obj:set_blocking(false)
       local status, err = pcall(socket_obj:connect(socket_host, socket_port))
+      -- lss_log("On connect:" .. tostring(status) .. "," .. tostring(err))
+      if err == "attempt to call a boolean value" then
       state_time_chk = os.clock() + INTERVAL_TO
       state_internal = 1
+      else
+        lss_log("Invalid address entered")
+        state_retry = false
+        if socket_obj ~= nil then
+          socket_obj:close()
+          socket_obj = nil
+        end
+        state_time_chk = 0.0
+      end
     else
       state_time_chk = os.clock() + INTERVAL_RETRY
     end
   elseif state_internal == 1 then
     local status, service, num = socket_obj:is_connected()
+    -- lss_log("Checking: ".. socket_host .. ":" .. tostring(socket_port) .. " : " .. tostring(status) .. "," .. tostring(service) .. "," .. tostring(num))
     if status then
       -- no timeout
       socket_obj:set_blocking(true)
@@ -151,9 +164,9 @@ function check_loop()
       end
       state_time_chk = os.clock() + INTERVAL_RETRY
       state_internal = 0
-      return
     end
   end
+  state_loop_locked = false
 end
 
 -- Called at script load
@@ -231,7 +244,7 @@ function script_update(settings)
   state_active = obs.obs_data_get_bool(settings, "active")
   state_retry = true
   state_mode_sent = MODE_UNDEFINED
-  state_time_chk = os.clock() + 0.5
+  state_time_chk = os.clock() + 1.0
   if state_active then
     logState = "activated"
   else
