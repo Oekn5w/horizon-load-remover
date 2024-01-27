@@ -16,7 +16,6 @@ see [README in files directory](./files)
 * OBS
 * [Advanced Scene Switcher Plugin](https://github.com/WarmUpTill/SceneSwitcher/) (1.24.3 or later)
 * LiveSplit layout with the [LiveSplit Server](https://github.com/LiveSplit/LiveSplit.Server#install) component
-* [Python 3.11](https://www.python.org/downloads/windows/) has to be installed (For OBS 29 Python 3.12 does not work), on a path that does not contain spaces.
 
 ## Setup
 Advanced Scene Switcher 1.24 and later contains an `else` branch in the macros, which is used here. If that is not available, another macro with the negated condition has to be added (doubling the performance impact) to resume the timer.
@@ -29,20 +28,17 @@ The setup is described for a 1080p source. Scaled sources are possible when they
 
 Download the latest Zip archive from the Releases section (or clone the repository). All you need is in the `files` subdirectory.
 
-### Python OBS Script
+### Lua OBS Script
 
 [OBS documentation on this part](https://obsproject.com/wiki/Getting-Started-With-OBS-Scripting)
 * In OBS go to `Tools` -> `Scripts`
-* Go to the `Python Settings` tab
-* Enter the path to your Python installation (where the Python executable is, don't include the executable itself)
-
-Now for the script itself:
-* Go back to the `Scripts` tab
-* Load the script `socketWrapper.py` that is found in the `files` directory
-* Adjust settings if needed (not available in current state, default settings hardcoded)
+* Load the script `socketWrapper.lua` that is found in the `files` directory
+* Adjust settings if needed. The default values are for when Live Split is run on the same PC as OBS.
 * Check the OBS Hotkeys under `File` -> `Settings` -> `Hotkeys`, they should list `LiveSplit Server pause GT` and `LiveSplit Server unpause GT` at the end of the first section. If they are, the script is installed correctly.
 
-You don't need to assign any hotkeys, but you could do so temporarily to check if the script is connected to LiveSplit (make sure you have the LiveSplit Server component started). The hotkeys you set get removed when you reload the script.
+You don't need to assign any hotkeys, but you could do so temporarily to check if the script is connected to LiveSplit (make sure you have the LiveSplit Server component started).
+
+The script is also available for Python and is feature-equivalent, but requires an extra Python installation. Hotkeys are called `PY: LiveSplit Server pause GT` and `PY: LiveSplit Server unpause GT`.
 
 ### Advanced Scene Switcher
 
@@ -55,8 +51,8 @@ The macro can be set up automatically with most settings set or completely manua
 
 #### Macro import:
 * Right click on the macro section and select `Import`
-* Paste the string from [files/import-macros/1080p.txt](files/import-macros/1080p.txt) into the box
-* Select the image source according to your setup
+* Paste the string from [files/import-macros/1080p-eng-default.txt](files/import-macros/1080p-eng-default.txt) into the box
+* Select the Horizon source according to your setup
 * Select the path to the image 
 
 #### Macro manual setup:
@@ -66,12 +62,12 @@ The macro can be set up automatically with most settings set or completely manua
   * Type: Video
   * Select the Source or Scene that shows the gameplay
   * Select `matches pattern` as mode
-  * Choose `HZD-1080p.png` as reference
-  * Threshold to `0.97`
+  * Choose `img-1080p.png` as reference
+  * Threshold to `0.95`
   * Check the `Use alpha channel as mask` checkbox
   * Pattern matching method `Squared difference`
   * Check area (X, Y, W, H): `99,976,115,25`
-* Action branch 1:
+* Action branch 1 (if):
   * Type: Hotkey
   * Select the dropdowns to show:
     * `OBS hotkey`
@@ -101,14 +97,6 @@ To create one for your workflow follow these instructions (and create a Pull Req
 ## Troubleshooting
 
 TBD
-
-## Improvement potential
-
-* LSS: Make it a websocket server so that the websocket actions from the Scene Switcher can be used
-* ✔ Visual indication in the layout similar to the global hotkey indication of
-  1. whether the server is running
-  2. whether the expected number of clients are connected
-* ✔ Python script for OBS directly which keeps the socket connection open and works with OBS internal hotkeys for the game time toggle
 
 ## License
 

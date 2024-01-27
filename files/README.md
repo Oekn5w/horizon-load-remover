@@ -22,6 +22,8 @@ Try running the beginning of the game with one of these settings:
 | 1080p | English | 99 | 976 | 115 | 25 | 0.95 | `img-1080p.png` |
 | 1080p | English | 99 | 976 | 115 | 25 | 0.95 - 0.97 | `img-1080p-capture-card.png` |
 
+The first line's settings can directly be imported from the `1080p-eng-default.txt` file.
+
 If you have to adjust the edges of the screen in the Playstation settings (and crop and rescale the capture card image to fit the OBS screen), the area values given here might not hit the correct area, you can increase the area here to see if the image works (decrease X and Y, and increase W and H), or select `Show Pattern` and adjust the X and Y so that 2 Pixels to the left and above the `L` are visible.
 
 If that also doesn't work, you can capture a screenshot in OBS showing the whole default loading screen and apply the procedure in the main README or message one of the tool developers on the Horizon Speedruning Discord.
