@@ -5,11 +5,13 @@
 
 state("HorizonZeroDawn", "Steam")
 {
+    ulong worldPtr : 0x0714F830;
     uint loading : 0x0714F830, 0x4B4;
 }
 
 state("HorizonZeroDawn", "GOG")
 {
+    ulong worldPtr : 0x0714C728;
     uint loading : 0x0714C728, 0x4B4;
 }
 
@@ -33,7 +35,7 @@ startup
 
 isLoading
 {
-    return current.loading >= 1;
+    return (current.worldPtr > 0 && current.loading >= 1);
 }
 
 exit
