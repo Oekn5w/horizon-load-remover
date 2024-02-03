@@ -1,6 +1,6 @@
 The following table shows the available comparison images and their area settings
 
-### PC
+### PC (for legacy reasons)
 
 | Resolution | Language | X | Y | Width | Height | Threshold | Filename |
 |---|---|---|---|---|---|---|---|
@@ -23,6 +23,8 @@ Try running the beginning of the game with one of these settings:
 | 1080p | English | 99 | 976 | 115 | 25 | 0.95 - 0.97 | `img-1080p-capture-card.png` |
 
 The first line's settings can directly be imported from the `1080p-eng-default.txt` file.
+
+Also, the 1080p versions from the table above can probably be used for other languages, maybe relax the threshold to `0.95`.
 
 If you have to adjust the edges of the screen in the Playstation settings (and crop and rescale the capture card image to fit the OBS screen), the area values given here might not hit the correct area, you can increase the area here to see if the image works (decrease X and Y, and increase W and H), or select `Show Pattern` and adjust the X and Y so that 2 Pixels to the left and above the `L` are visible.
 

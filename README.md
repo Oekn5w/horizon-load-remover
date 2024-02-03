@@ -2,22 +2,35 @@
 
 This repository serves as an setup manual for a load remover for Horizon Zero Dawn speedruns.
 
-At its core, the load remover is using the Advanced Scene Switcher plugin in OBS to determine if a loadscreen is active and gives the pause / resume commands to the LiveSplit Server component via a python script.
+The up-to-date rules for the loads that count can be found [here](https://www.speedrun.com/hzd/guides/6atmp).
 
-The current rules for the loads that count can be found [here](https://www.speedrun.com/hzd/guides/6atmp).
+## Autosplitter (PC)
+
+For PC, use the autosplitter that is automatically suggested in the `Splits Editor` after having selected the game.
+
+If necessary (e.g. CE Runs), the Autosplitter can manually added to LiveSplit by adding a `Scriptable Auto Splitter` component in LiveSplit and downloading the script in the `autosplitter` subfolder:
+* [hzd-autosplitter.asl](https://raw.githubusercontent.com/Oekn5w/horizon-load-remover/master/autosplitter/hzd-autosplitter.asl)
+
+At the moment, only Load Removal is implemented in the script.
+
+## Video-based Load Remover (Console)
 
 Based on previous work on the load remover by [Blegas78](https://github.com/blegas78/autoSplitters) and the [description in the SceneSwitcher wiki](https://github.com/WarmUpTill/SceneSwitcher/wiki/Activate-overlay-to-hide-parts-of-the-screen).
 
-## Implemented resolutions and languages
+At its core, the new video-based load remover is using the Advanced Scene Switcher plugin in OBS to determine if a loadscreen is active and gives the pause / resume commands to the LiveSplit Server component via a Lua script.
+
+Towards the end of the development of the video-based load remover, we implemented the memory-based Autosplitter for PC so the Readme for this setup can refer to both PC and Console.
+
+### Implemented resolutions and languages
 
 see [README in files directory](./files)
 
-## Prerequistites
+### Prerequistites
 * OBS
 * [Advanced Scene Switcher Plugin](https://github.com/WarmUpTill/SceneSwitcher/) (1.24.3 or later)
 * LiveSplit layout with the [LiveSplit Server](https://github.com/LiveSplit/LiveSplit.Server#install) component
 
-## Setup
+### Setup
 Advanced Scene Switcher 1.24 and later contains an `else` branch in the macros, which is used here. If that is not available, another macro with the negated condition has to be added (doubling the performance impact) to resume the timer.
 
 For the LiveSplit Server component a modified version is also available under [https://github.com/Oekn5w/LiveSplit.Server/releases](https://github.com/Oekn5w/LiveSplit.Server/releases). This version implements a feature to Auto-Start the server and also provides the option to show a small line in the LiveSplit layout to quickly check the status of Server while running. In the OBS layout, the indicator can easily be cropped if you do not want to have it in the recording.
@@ -28,7 +41,7 @@ The setup is described for a 1080p source. Scaled sources are possible when they
 
 Download the latest Zip archive from the Releases section (or clone the repository). All you need is in the `files` subdirectory.
 
-### Lua OBS Script
+#### Lua OBS Script
 
 [OBS documentation on this part](https://obsproject.com/wiki/Getting-Started-With-OBS-Scripting)
 * In OBS go to `Tools` -> `Scripts`
@@ -40,22 +53,22 @@ You don't need to assign any hotkeys, but you could do so temporarily to check i
 
 The script is also available for Python and is feature-equivalent, but requires an extra Python installation. Hotkeys are called `PY: LiveSplit Server pause GT` and `PY: LiveSplit Server unpause GT`.
 
-### Advanced Scene Switcher
+#### Advanced Scene Switcher
 
-#### General
+##### General
 * Set the advanced Scene Switcher interval to the lowest possible (10ms)
 
 The LiveSplit Server component has to be started __manually__ at every LiveSplit launch if you are not using the customized version.
 
 The macro can be set up automatically with most settings set or completely manually.
 
-#### Macro import:
+##### Macro import:
 * Right click on the macro section and select `Import`
 * Paste the string from [files/import-macros/1080p-eng-default.txt](files/import-macros/1080p-eng-default.txt) into the box
 * Select the Horizon source according to your setup
 * Select the path to the image 
 
-#### Macro manual setup:
+##### Macro manual setup:
 * Add a new macro
 * Condition:
   * Ensure that `Perform actions only on condition change` is checked
@@ -83,7 +96,7 @@ The macro can be set up automatically with most settings set or completely manua
 The final macro can be seen here:
 ![macro setup](./dev-resources/adv-setup.png)
 
-## Generate own comparison image
+### Generate own comparison image
 
 Each text language, resolution and aspect ratio need its own comparison image.
 
