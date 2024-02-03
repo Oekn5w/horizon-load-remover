@@ -1,4 +1,5 @@
-// Created by Canine, ISO and Dorian
+// Created by ISO and Dorian
+// Memory location by Canine
 // Version detection from the Death Stranding and Alan Wake ASL
 
 state("HorizonZeroDawn", "v181/7517962-Steam")
