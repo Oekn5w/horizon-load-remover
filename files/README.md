@@ -6,7 +6,7 @@ The following table shows the available comparison images and their area setting
 |---|---|---|---|---|---|---|---|
 | 1080p | English | 99 | 976 | 115 | 25 | 0.97 | `img-1080p.png` |
 | 1080p | German | 99 | 976 | 80 | 21 | 0.97 | `img-1080p-german.png` |
-| 1080p | Portugese Brasilian | 99 | 976 | 157 | 24 | 0.96 | `img-1080p-pt-br.png` |
+| 1080p | Portugese<br/>Brasilian | 99 | 976 | 157 | 24 | 0.96 | `img-1080p-pt-br.png` |
 | 720p | English | 66 | 650 | 77 | 17 | 0.97 | `img-720p.png` |
 | 1440p<br/>(2560x1440) | English | 133 | 1301 | 152 | 33 | 0.96 | `img-1440p.png` |
 | 1440p-UW<br/>(3440x1440) | English | 573 | 1301 | 152 | 33 | 0.96 | `img-1440p.png` |

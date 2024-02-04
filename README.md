@@ -94,6 +94,7 @@ The macro can be set up automatically with most settings set or completely manua
     * `LiveSplit Server unpause GT`
 
 The final macro can be seen here:
+
 ![macro setup](./dev-resources/adv-setup.png)
 
 ### Generate own comparison image
