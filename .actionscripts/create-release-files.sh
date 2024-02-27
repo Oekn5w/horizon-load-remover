@@ -7,6 +7,9 @@ cd "$REPOROOT"
 
 TARGETFOLDER=$REPOROOT/generated
 
+# Clean target folder
+rm $TARGETFOLDER/*
+
 # Zip up files for Video LR
 echo "Create ZIP file for video LR"
 FILENAME_VIDEO=files-for-video-LR.zip
@@ -18,8 +21,7 @@ FILENAME_AS=autosplitter.zip
 git ls-files -- ./autosplitter ':!:*.md' | zip -FS -q -@ "$TARGETFOLDER/$FILENAME_AS"
 
 # Create PDFs
-echo "Create PDF from READMEs"
+echo "Create PDF from README"
 pandoc --from=gfm --to=pdf -o "$TARGETFOLDER/README.pdf" "$REPOROOT/README.md"
-pandoc --from=gfm --to=pdf -o "$TARGETFOLDER/README-visual-LR.pdf" "$REPOROOT/files/README.md"
 
 echo "Done"
